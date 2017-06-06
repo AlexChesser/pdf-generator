@@ -17,6 +17,12 @@ import org.apache.cordova.LOG;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.System;
+
+
+import android.print.PdfPrint;
+import android.print.PrintAttributes;
+import android.os.Environment;
 
 /**
  * Created by cesar on 22/01/2017.
@@ -48,12 +54,22 @@ public class PDFPrinterWebView extends WebViewClient {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void onPageFinished(WebView view, String url) {
-        super.onPageFinished(view, url);
+    public void onPageFinished(WebView webView, String url) {
+        super.onPageFinished(webView, url);
 
-        PDFPrinter pdfPrinter = new PDFPrinter(view, fileName);
+        //PDFPrinter pdfPrinter = new PDFPrinter(webView, fileName);
+        //printManager.print("PDF", pdfPrinter, null);
 
-        printManager.print("PDF", pdfPrinter, null);
+        String jobName = fileName + " Document";
+        PrintAttributes attributes = new PrintAttributes.Builder()
+                .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                .setResolution(new PrintAttributes.Resolution("pdf", "pdf", 600, 600))
+                .setMinMargins(PrintAttributes.Margins.NO_MARGINS).build();
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM + "/PDFTest/");
+        PdfPrint pdfPrint = new PdfPrint(attributes);
+        pdfPrint.print(webView.createPrintDocumentAdapter(jobName), path, "output_" + System.currentTimeMillis() + ".pdf");
+
+
 
         this.cordovaCallback.success("success");
     }
