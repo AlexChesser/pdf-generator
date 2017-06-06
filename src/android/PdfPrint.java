@@ -36,6 +36,8 @@ public class PdfPrint {
         if (!path.exists()) {
             path.mkdirs();
         }
+        // TODO: once this works convert to a MEMORYFILE implementaiton to bypass storage.
+        // TODO: convert memoryfile bytes to BASE-64
         File file = new File(path, fileName);
         try {
             file.createNewFile();
