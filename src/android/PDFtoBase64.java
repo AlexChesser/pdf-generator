@@ -19,7 +19,7 @@ public class PDFtoBase64 {
     private final PrintAttributes printAttributes;
 
     private Context ctx;
-    public File result;
+    private File file;
     public String encodedBase64;
 
     public PDFtoBase64(Context ctx, PrintAttributes printAttributes) {
@@ -29,11 +29,12 @@ public class PDFtoBase64 {
 
     public String getAsBase64() {
         try{
-            int len = (int)result.length();
-            FileInputStream fileInputStreamReader = new FileInputStream(result);
+            int len = (int)file.length();
+            FileInputStream fileInputStreamReader = new FileInputStream(file);
             byte[] bytes = new byte[len];
             fileInputStreamReader.read(bytes);
             fileInputStreamReader.close();
+            file.delete();
             encodedBase64 = Base64.encodeToString( bytes, Base64.DEFAULT );
         } catch(FileNotFoundException ex) {
              encodedBase64 = ex.getMessage();
@@ -62,19 +63,16 @@ public class PDFtoBase64 {
         };
 
         printAdapter.onLayout(null, printAttributes, null, myLayoutResultCallback, null);
-
     }
 
     private ParcelFileDescriptor getOutputFile(File path, String fileName) {
         if (!path.exists()) {
             path.mkdirs();
         }
-        // TODO: once this works convert to a MEMORYFILE implementaiton to bypass storage.
-        // TODO: convert memoryfile bytes to BASE-64
-        result = new File(path, fileName);
+        file = new File(path, fileName);
         try {
-            result.createNewFile();
-            return ParcelFileDescriptor.open(result, ParcelFileDescriptor.MODE_READ_WRITE);
+            file.createNewFile();
+            return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE);
         } catch (Exception e) {
             Log.e(TAG, "Failed to open ParcelFileDescriptor", e);
         }
