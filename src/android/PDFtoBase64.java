@@ -29,13 +29,16 @@ public class PDFtoBase64 {
 
     public String getAsBase64() {
         try{
-            int len = (int)file.length();
             FileInputStream fileInputStreamReader = new FileInputStream(file);
+            // don't streamline this into one line. this does not function 
+            // if we try and tighten it up too much. some sort of race-condition?
+            // order of operatiosn in java?
+            int len = (int)file.length();
             byte[] bytes = new byte[len];
             fileInputStreamReader.read(bytes);
             fileInputStreamReader.close();
-            file.delete();
             encodedBase64 = Base64.encodeToString( bytes, Base64.DEFAULT );
+            file.delete();
         } catch(FileNotFoundException ex) {
              encodedBase64 = ex.getMessage();
         } catch(IOException ex) {
@@ -44,7 +47,7 @@ public class PDFtoBase64 {
         return encodedBase64;
     }
 
-    public void print(final PrintDocumentAdapter printAdapter) {
+    public void process(final PrintDocumentAdapter printAdapter) {
         final File path = ctx.getFilesDir();
         final String fileName = "temp.pdf";
 

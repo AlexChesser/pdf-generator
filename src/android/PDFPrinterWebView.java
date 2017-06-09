@@ -34,12 +34,14 @@ public class PDFPrinterWebView extends WebViewClient {
     //Cordova Specific, delete this safely if not using cordova.
     private CallbackContext cordovaCallback;
     private Context ctx;
+    private boolean outputBase64;
 
     private String fileName;
 
-    public PDFPrinterWebView(PrintManager _printerManager, Context ctx){
+    public PDFPrinterWebView(PrintManager _printerManager, Context ctx, Boolean outputBase64){
         printManager = _printerManager;
         this.ctx = ctx;
+        this.outputBase64 = outputBase64;
     }
 
     public void setCordovaCallback(CallbackContext cordovaCallback){
@@ -54,20 +56,22 @@ public class PDFPrinterWebView extends WebViewClient {
     @Override
     public void onPageFinished(WebView webView, String url) {
         super.onPageFinished(webView, url);
-
-        //PDFPrinter pdfPrinter = new PDFPrinter(webView, fileName);
-        //printManager.print("PDF", pdfPrinter, null);
-
-        String jobName = fileName + " Document";
-        PrintAttributes attributes = new PrintAttributes.Builder()
+        String result = "failure";
+        if(this.outputBase64){
+            String jobName = "Base64 Document";
+            PrintAttributes attributes = new PrintAttributes.Builder()
                 .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
                 .setResolution(new PrintAttributes.Resolution("pdf", "pdf", 600, 600))
                 .setMinMargins(PrintAttributes.Margins.NO_MARGINS).build();
-        PDFtoBase64 pdfToBase64 = new PDFtoBase64(ctx, attributes);
+            PDFtoBase64 pdfToBase64 = new PDFtoBase64(ctx, attributes);
+            pdfToBase64.process(webView.createPrintDocumentAdapter(jobName));
+            result = pdfToBase64.getAsBase64();
+        } else {
+            PDFPrinter pdfPrinter = new PDFPrinter(webView, fileName);
+            printManager.print("PDF", pdfPrinter, null);
+            result = "success";
+        }
 
-        pdfToBase64.print(webView.createPrintDocumentAdapter(jobName));
-        String tmp = pdfToBase64.getAsBase64();
-        this.cordovaCallback.success(tmp);
+        this.cordovaCallback.success(result);
     }
-
 }
